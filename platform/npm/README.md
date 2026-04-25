@@ -1,4 +1,4 @@
-# pkmg npm wrapper
+# @seriohhhh/pkmg
 
 This package is a thin npm wrapper around the `pkmg` Go binary.
 
@@ -7,7 +7,7 @@ It downloads the matching GitHub Release asset for the current package version d
 ## Install
 
 ```bash
-npm install -g pkmg
+npm install -g @seriohhhh/pkmg
 ```
 
 ## Notes

@@ -50,6 +50,7 @@ fi
 
 cd "${NPM_DIR}"
 
+PACKAGE_NAME="$(node -p "require('./package.json').name")"
 CURRENT_VERSION="$(node -p "require('./package.json').version")"
 if [[ "${CURRENT_VERSION}" != "${VERSION}" ]]; then
   echo "package.json version mismatch."
@@ -59,5 +60,5 @@ if [[ "${CURRENT_VERSION}" != "${VERSION}" ]]; then
   exit 1
 fi
 
-echo "Publishing npm package version ${VERSION} from ${NPM_DIR}..."
+echo "Publishing npm package ${PACKAGE_NAME}@${VERSION} from ${NPM_DIR}..."
 npm publish --access public
