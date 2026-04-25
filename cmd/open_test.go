@@ -53,7 +53,7 @@ func TestCreateLocalSkillWithoutInitCreatesNestedFile(t *testing.T) {
 		t.Fatalf("expected created file to exist: %v", err)
 	}
 
-	if string(content) != "#!/bin/sh\n# cleanup\n\n" {
+	if string(content) != "#!/usr/bin/env sh\n# cleanup\n\n" {
 		t.Fatalf("unexpected default content: %q", string(content))
 	}
 }

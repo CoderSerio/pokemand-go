@@ -232,7 +232,7 @@ func handleUIAction(action string, payload json.RawMessage) (interface{}, error)
 		if err := json.Unmarshal(payload, &req); err != nil {
 			return nil, err
 		}
-		return createLocalSkill(req.Path, req.Content)
+		return createLocalSkillWithRequiredExtension(req.Path, req.Content)
 	case "skills.save":
 		var req struct {
 			ID      string `json:"id"`

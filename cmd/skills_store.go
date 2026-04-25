@@ -175,7 +175,15 @@ func saveLocalSkill(relativePath string, content string) (LocalSkillDetail, erro
 }
 
 func createLocalSkill(relativePath string, content string) (LocalSkillDetail, error) {
-	normalizedPath, err := normalizeSkillRelativePath(relativePath)
+	return createLocalSkillWithPathNormalizer(relativePath, content, normalizeSkillRelativePath)
+}
+
+func createLocalSkillWithRequiredExtension(relativePath string, content string) (LocalSkillDetail, error) {
+	return createLocalSkillWithPathNormalizer(relativePath, content, normalizeSkillRelativePathWithRequiredExtension)
+}
+
+func createLocalSkillWithPathNormalizer(relativePath string, content string, normalize func(string) (string, error)) (LocalSkillDetail, error) {
+	normalizedPath, err := normalize(relativePath)
 	if err != nil {
 		return LocalSkillDetail{}, err
 	}
@@ -485,12 +493,18 @@ func extractSkillSummary(path string) (string, error) {
 
 	for _, line := range preview {
 		trimmed := strings.TrimSpace(line)
-		if trimmed == "" || strings.HasPrefix(trimmed, "#!") {
+		if trimmed == "" || strings.HasPrefix(trimmed, "#!") || trimmed == "<?php" {
 			continue
 		}
-		if strings.HasPrefix(trimmed, "#") {
-			trimmed = strings.TrimSpace(strings.TrimPrefix(trimmed, "#"))
+
+		trimmed = strings.TrimSuffix(trimmed, "*/")
+		for _, prefix := range []string{"#", "//", "--", ";", "/*", "*"} {
+			if strings.HasPrefix(trimmed, prefix) {
+				trimmed = strings.TrimSpace(strings.TrimPrefix(trimmed, prefix))
+				break
+			}
 		}
+
 		if trimmed != "" {
 			return trimmed, nil
 		}
@@ -505,6 +519,30 @@ func trimFileExt(name string) string {
 }
 
 func normalizeSkillRelativePath(relativePath string) (string, error) {
+	cleaned, err := sanitizeSkillRelativePath(relativePath)
+	if err != nil {
+		return "", err
+	}
+	if filepath.Ext(cleaned) == "" {
+		cleaned += ".sh"
+	}
+
+	return cleaned, nil
+}
+
+func normalizeSkillRelativePathWithRequiredExtension(relativePath string) (string, error) {
+	cleaned, err := sanitizeSkillRelativePath(relativePath)
+	if err != nil {
+		return "", err
+	}
+	if filepath.Ext(cleaned) == "" {
+		return "", fmt.Errorf("managed skill path must include a file extension")
+	}
+
+	return cleaned, nil
+}
+
+func sanitizeSkillRelativePath(relativePath string) (string, error) {
 	trimmed := strings.TrimSpace(relativePath)
 	if trimmed == "" {
 		return "", fmt.Errorf("managed skill path cannot be empty")
@@ -520,16 +558,40 @@ func normalizeSkillRelativePath(relativePath string) (string, error) {
 	if strings.HasPrefix(cleaned, "../") || cleaned == ".." {
 		return "", fmt.Errorf("managed skill path cannot escape the scripts directory")
 	}
-	if filepath.Ext(cleaned) == "" {
-		cleaned += ".sh"
-	}
 
 	return cleaned, nil
 }
 
 func defaultSkillTemplate(relativePath string) string {
 	title := trimFileExt(filepath.Base(relativePath))
-	return fmt.Sprintf("#!/bin/sh\n# %s\n\n", title)
+	extension := strings.ToLower(filepath.Ext(relativePath))
+
+	switch extension {
+	case ".sh":
+		return fmt.Sprintf("#!/usr/bin/env sh\n# %s\n\n", title)
+	case ".bash":
+		return fmt.Sprintf("#!/usr/bin/env bash\n# %s\n\n", title)
+	case ".zsh":
+		return fmt.Sprintf("#!/usr/bin/env zsh\n# %s\n\n", title)
+	case ".py":
+		return fmt.Sprintf("#!/usr/bin/env python3\n# %s\n\n", title)
+	case ".js", ".cjs", ".mjs":
+		return fmt.Sprintf("#!/usr/bin/env node\n// %s\n\n", title)
+	case ".rb":
+		return fmt.Sprintf("#!/usr/bin/env ruby\n# %s\n\n", title)
+	case ".pl":
+		return fmt.Sprintf("#!/usr/bin/env perl\n# %s\n\n", title)
+	case ".lua":
+		return fmt.Sprintf("#!/usr/bin/env lua\n-- %s\n\n", title)
+	case ".php":
+		return fmt.Sprintf("#!/usr/bin/env php\n<?php\n\n// %s\n\n", title)
+	case ".ps1":
+		return fmt.Sprintf("# %s\n\n", title)
+	case ".ts", ".tsx", ".jsx":
+		return fmt.Sprintf("// %s\n\n", title)
+	default:
+		return fmt.Sprintf("# %s\n\n", title)
+	}
 }
 
 func nextCopyRelativePath(relativePath string) (string, error) {

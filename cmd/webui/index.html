@@ -193,19 +193,33 @@
 
       .action-row {
         display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
-        margin-top: 16px;
-      }
-
-      .version-row {
-        display: flex;
-        gap: 10px;
+        gap: 16px;
+        justify-content: space-between;
         align-items: center;
         flex-wrap: wrap;
         margin-top: 16px;
         padding-top: 16px;
         border-top: 1px solid var(--line);
+      }
+
+      .action-group,
+      .version-controls {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: nowrap;
+      }
+
+      .version-controls {
+        justify-content: flex-end;
+      }
+
+      .version-select-wrap {
+        flex: 0 0 260px;
+      }
+
+      .version-select {
+        width: 100%;
       }
 
       .version-list {
@@ -324,6 +338,16 @@
           grid-template-columns: 1fr;
         }
       }
+
+      @media (max-width: 760px) {
+        .action-row {
+          align-items: stretch;
+        }
+
+        .version-controls {
+          width: 100%;
+        }
+      }
     </style>
   </head>
   <body>
@@ -359,7 +383,6 @@
                 <h3>{{ skill.title }}</h3>
                 <div class="skill-path">{{ skill.relativePath }}</div>
               </div>
-              <div class="tag">v{{ skill.versionCount }}</div>
             </div>
 
             <div class="skill-summary">{{ skill.summary }}</div>
@@ -370,26 +393,24 @@
             </div>
 
             <div class="action-row">
-              <button class="button primary" @click="openEditor(skill.id)">编辑</button>
-              <button class="button" @click="copySkill(skill.id)">复制</button>
-              <button class="button" @click="openSkillDir(skill.id)">打开目录</button>
-              <button class="button danger" @click="deleteSkill(skill.id)">删除</button>
-            </div>
-
-            <div class="version-row">
-              <select class="editor-select" style="max-width: 220px" v-model="selectedVersions[skill.id]">
-                <option :value="null">选择历史版本</option>
-                <option v-for="version in skill.versions.slice().reverse()" :key="version.number" :value="version.number">
-                  {{ version.label }} · {{ formatDate(version.savedAt) }}
-                </option>
-              </select>
-              <button class="button danger" :disabled="!selectedVersions[skill.id]" @click="restoreVersion(skill.id, selectedVersions[skill.id])">
-                切换到选中版本
-              </button>
-              <div class="version-list">
-                <span class="version-pill" v-for="version in skill.versions.slice(-4)" :key="version.number">
-                  {{ version.label }}
-                </span>
+              <div class="action-group">
+                <button class="button primary" @click="openEditor(skill.id)">编辑</button>
+                <button class="button" @click="copySkill(skill.id)">复制</button>
+                <button class="button" @click="openSkillDir(skill.id)">打开目录</button>
+                <button class="button danger" @click="deleteSkill(skill.id)">删除</button>
+              </div>
+              <div class="version-controls">
+                <div class="version-select-wrap">
+                  <select class="editor-select version-select" v-model="selectedVersions[skill.id]">
+                    <option :value="null">选择历史版本</option>
+                    <option v-for="version in skill.versions.slice().reverse()" :key="version.number" :value="version.number">
+                      {{ version.label }} · {{ formatDate(version.savedAt) }}
+                    </option>
+                  </select>
+                </div>
+                <button class="button primary" :disabled="!selectedVersions[skill.id]" @click="restoreVersion(skill.id, selectedVersions[skill.id])">
+                  切换到选中版本
+                </button>
               </div>
             </div>
           </div>
@@ -422,16 +443,18 @@
                   v-if="editor.mode === 'create'"
                   class="editor-input"
                   v-model.trim="editor.path"
-                  placeholder="例如: team/deploy.sh 或 cleanup"
+                  placeholder="例如: team/deploy.sh、tools/server.js、jobs/task.py"
                 />
               </div>
-              <div class="side-note" style="margin-bottom: 10px">轻量编辑区</div>
+              <div class="side-note" style="margin-bottom: 10px">
+                {{ editor.mode === 'create' ? '创建时必须带扩展名；内容留空会按扩展名生成默认模板。' : '轻量编辑区' }}
+              </div>
               <textarea class="editor-textarea" v-model="editor.content"></textarea>
             </div>
 
             <div class="preview-panel">
               <div class="side-note" style="margin-bottom: 10px">高亮预览</div>
-              <pre><code class="language-bash" v-html="highlightedContent"></code></pre>
+              <pre><code :class="`language-${highlightLanguage}`" v-html="highlightedContent"></code></pre>
 
               <div style="margin-top: 16px">
                 <div class="side-note" style="margin-bottom: 8px">版本记录</div>
@@ -478,9 +501,23 @@
           };
         },
         computed: {
+          currentEditorPath() {
+            return this.editor.path || this.editor.skill?.relativePath || "";
+          },
+          highlightLanguage() {
+            const path = (this.currentEditorPath || "").toLowerCase();
+            if (path.endsWith(".py")) return "python";
+            if (path.endsWith(".js") || path.endsWith(".cjs") || path.endsWith(".mjs")) return "javascript";
+            if (path.endsWith(".ts") || path.endsWith(".tsx")) return "typescript";
+            if (path.endsWith(".rb")) return "ruby";
+            if (path.endsWith(".php")) return "php";
+            if (path.endsWith(".ps1")) return "powershell";
+            if (path.endsWith(".lua")) return "lua";
+            return "bash";
+          },
           highlightedContent() {
             try {
-              return hljs.highlight(this.editor.content || "", { language: "bash" }).value;
+              return hljs.highlight(this.editor.content || "", { language: this.highlightLanguage }).value;
             } catch (error) {
               return (this.editor.content || "").replace(/[&<>]/g, (char) => ({
                 "&": "&amp;",
@@ -566,7 +603,7 @@
             this.editor.mode = "create";
             this.editor.skill = null;
             this.editor.path = "";
-            this.editor.content = "#!/bin/sh\n# Describe this skill\n\n";
+            this.editor.content = "";
           },
           closeEditor() {
             this.editor.open = false;
@@ -578,6 +615,10 @@
           async saveEditor() {
             let detail;
             if (this.editor.mode === "create") {
+              if (!/\.[^/]+$/.test((this.editor.path || "").trim())) {
+                window.alert("新建 skill 时必须显式带上扩展名，例如 cleanup.sh、server.js 或 task.py。");
+                return;
+              }
               detail = await this.request("skills.create", {
                 path: this.editor.path,
                 content: this.editor.content,

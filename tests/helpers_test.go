@@ -85,6 +85,13 @@ func writeManagedScript(t *testing.T, dataDir string, relativePath string, conte
 	return absolutePath
 }
 
+func requireRuntime(t *testing.T, command string) {
+	t.Helper()
+	if _, err := exec.LookPath(command); err != nil {
+		t.Skipf("skipping because runtime %q is not available", command)
+	}
+}
+
 func assertNoChineseOutput(t *testing.T, output string) {
 	t.Helper()
 	if hanPattern.MatchString(output) {

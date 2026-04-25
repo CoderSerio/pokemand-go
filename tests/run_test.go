@@ -32,3 +32,22 @@ func TestRunMissingScriptAndFailureMessagesAreEnglish(t *testing.T) {
 	assertNoChineseOutput(t, failureOutput)
 	assertContains(t, failureOutput, "Script execution failed:")
 }
+
+func TestRunSupportsJavaScriptAndPythonScripts(t *testing.T) {
+	requireRuntime(t, "node")
+	requireRuntime(t, "python3")
+
+	tempDir := t.TempDir()
+	configDir := filepath.Join(tempDir, "config")
+	dataDir := filepath.Join(tempDir, "data")
+
+	writeManagedScript(t, dataDir, "hello.js", "#!/usr/bin/env node\nconsole.log(process.argv.slice(2).join('-'))\n")
+	jsOutput := runCLI(t, configDir, dataDir, "run", "hello.js", "node", "skill")
+	assertNoChineseOutput(t, jsOutput)
+	assertContains(t, jsOutput, "node-skill")
+
+	writeManagedScript(t, dataDir, "hello.py", "#!/usr/bin/env python3\nimport sys\nprint('-'.join(sys.argv[1:]))\n")
+	pyOutput := runCLI(t, configDir, dataDir, "run", "hello.py", "python", "skill")
+	assertNoChineseOutput(t, pyOutput)
+	assertContains(t, pyOutput, "python-skill")
+}

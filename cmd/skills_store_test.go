@@ -72,3 +72,47 @@ func TestSkillLifecycle(t *testing.T) {
 		t.Fatalf("expected metadata to be removed, stat err=%v", err)
 	}
 }
+
+func TestCreateLocalSkillWithRequiredExtensionRejectsMissingExtension(t *testing.T) {
+	tempDir := t.TempDir()
+	t.Setenv("PKMG_CONFIG_DIR", filepath.Join(tempDir, "config"))
+	t.Setenv("PKMG_DATA_DIR", filepath.Join(tempDir, "data"))
+	resetPathCaches()
+	defer resetPathCaches()
+
+	if _, err := createLocalSkillWithRequiredExtension("cleanup", ""); err == nil {
+		t.Fatal("expected missing extension to be rejected")
+	}
+}
+
+func TestCreateLocalSkillUsesExtensionSpecificTemplate(t *testing.T) {
+	tempDir := t.TempDir()
+	t.Setenv("PKMG_CONFIG_DIR", filepath.Join(tempDir, "config"))
+	t.Setenv("PKMG_DATA_DIR", filepath.Join(tempDir, "data"))
+	resetPathCaches()
+	defer resetPathCaches()
+
+	jsSkill, err := createLocalSkill("tooling/task.js", "")
+	if err != nil {
+		t.Fatalf("createLocalSkill for js failed: %v", err)
+	}
+	jsContent, err := os.ReadFile(jsSkill.AbsolutePath)
+	if err != nil {
+		t.Fatalf("failed to read js skill: %v", err)
+	}
+	if string(jsContent) != "#!/usr/bin/env node\n// task\n\n" {
+		t.Fatalf("unexpected js template: %q", string(jsContent))
+	}
+
+	pySkill, err := createLocalSkill("tooling/task.py", "")
+	if err != nil {
+		t.Fatalf("createLocalSkill for py failed: %v", err)
+	}
+	pyContent, err := os.ReadFile(pySkill.AbsolutePath)
+	if err != nil {
+		t.Fatalf("failed to read py skill: %v", err)
+	}
+	if string(pyContent) != "#!/usr/bin/env python3\n# task\n\n" {
+		t.Fatalf("unexpected py template: %q", string(pyContent))
+	}
+}
