@@ -3,7 +3,7 @@ LDFLAGS := -X github.com/CoderSerio/pokemand-go/cmd.Version=$(VERSION)
 PLATFORMS := linux/amd64 darwin/amd64 windows/amd64
 BINARY_NAME := pkmg
 
-.PHONY: all build clean install release release-dry-run
+.PHONY: all build clean install release release-dry-run publish-go publish-npm publish-all
 
 all: build
 
@@ -29,6 +29,18 @@ release-dry-run:
 	git tag "$(RELEASE_VERSION)"; \
 	trap 'git tag -d "$(RELEASE_VERSION)" >/dev/null 2>&1 || true' EXIT; \
 	goreleaser release --clean --skip=publish,announce
+
+publish-go:
+	@test -n "$(RELEASE_VERSION)" || (echo "Usage: make publish-go RELEASE_VERSION=v0.2.1" && exit 1)
+	@./scripts/publish/go.sh "$(RELEASE_VERSION)"
+
+publish-npm:
+	@test -n "$(RELEASE_VERSION)" || (echo "Usage: make publish-npm RELEASE_VERSION=v0.2.1" && exit 1)
+	@./scripts/publish/npm.sh "$(RELEASE_VERSION)"
+
+publish-all:
+	@test -n "$(RELEASE_VERSION)" || (echo "Usage: make publish-all RELEASE_VERSION=v0.2.1" && exit 1)
+	@./scripts/publish/index.sh "$(RELEASE_VERSION)" all
 
 
 # 发布多平台二进制文件
