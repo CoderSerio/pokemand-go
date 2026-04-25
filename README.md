@@ -1,43 +1,62 @@
-[简体中文](./README_ZH.md)
+# <div align="center">pkmg</div>
 
-# pkmg
+<div align="center">
 
-`pkmg` is a lightweight, local-first skill and script manager for humans and coding agents.
+_Local-first skill manager for humans and coding agents._
 
-It helps you turn existing shell scripts into reusable local skills, inspect them with structured metadata, manage them in a minimal Web UI, and expose an agent-friendly command surface without turning the project into a heavy platform.
+[![release](https://img.shields.io/github/v/release/CoderSerio/pokemand-go?display_name=tag&style=flat-square)](https://github.com/CoderSerio/pokemand-go/releases)
+[![ci](https://img.shields.io/github/actions/workflow/status/CoderSerio/pokemand-go/ci.yml?branch=main&style=flat-square&label=ci)](https://github.com/CoderSerio/pokemand-go/actions/workflows/ci.yml)
+[![go](https://img.shields.io/github/go-mod/go-version/CoderSerio/pokemand-go?style=flat-square)](https://go.dev/)
+[![license](https://img.shields.io/github/license/CoderSerio/pokemand-go?style=flat-square)](./LICENSE)
+[![local-first](https://img.shields.io/badge/local--first-yes-0f766e?style=flat-square)](#why-pkmg)
+[![agent-ready](https://img.shields.io/badge/agent-ready-yes-1d4ed8?style=flat-square)](./AGENTS.md)
+
+[简体中文](./README_ZH.md) · [Quick Start](#quick-start) · [Web UI](#web-ui) · [Agent Usage](#agent-friendly-usage) · [Testing](#testing)
+
+</div>
+
+`pkmg` turns scattered local scripts into a reusable local skill inventory.
+
+It is a lightweight script-layer manager for the local-agent workflow: discover, inspect, edit, version, and run existing skills without turning the stack into a heavy platform.
+
+`pkmg` is the CLI face of `pokemand-go`, short for a Go-built "pocket command" manager.
 
 ## Why pkmg
 
-Most local automation starts as scattered scripts.
+`skill` is becoming a more natural local pattern for agent workflows.
 
-That works until:
+That helps with locality, but it still leaves one annoying layer unresolved:
 
-- multiple skills need the same script
-- scripts drift across projects
-- agents need a safe way to discover and inspect what already exists
-- editing and versioning local skills becomes messy
+- scripts are duplicated across skills and projects
+- local capabilities become hard to browse and harder to trust
+- once version history matters, ad-hoc files become messy fast
+- agents need structured discovery, not "please read this folder"
 
-`pkmg` focuses on that local layer:
+`pkmg` sits exactly on that layer.
 
-- manage reusable local skills under one place
-- help agents list, search, inspect, and run existing skills
-- provide a lightweight Web UI for creation, editing, copy, and version switching
-- stay small: Go backend, static HTML, CDN-loaded frontend libraries
+It is not trying to replace agents, skill files, or project-specific automation. It is a lightweight manager for the script side of local skills: one place to organize them, version them, search them, inspect them, and reuse them across workflows.
+
+## What It Feels Like
+
+- Local-first by default. No registry or cloud dependency is required.
+- Agent-friendly from day one. JSON commands expose a stable discovery surface.
+- Light enough to stay out of the way. Go backend, embedded page, CDN UI dependencies.
+- Version-aware. Script edits automatically produce local snapshots.
+- Human-usable. A tiny Web UI gives you create, edit, copy, restore, and folder-open flows.
 
 ## Current Features
 
-- Initialize a local skill workspace under `data/`
-- Manage scripts in `data/scripts/`
-- List and search skills with JSON output
-- Inspect script metadata and content previews
-- Run managed scripts
+- Initialize a user-level skill workspace
+- Store managed scripts under a dedicated local data directory
+- List, search, inspect, and run skills from the CLI
+- Emit structured JSON for agent workflows
 - Launch a lightweight local Web UI with:
   - local skill listing
   - search
   - create
   - edit
   - copy
-  - version history
+  - version switching
   - open containing folder
 
 ## Installation
@@ -48,7 +67,7 @@ That works until:
 go install github.com/CoderSerio/pokemand-go@latest
 ```
 
-### Local development build
+### Build from source
 
 ```bash
 git clone https://github.com/CoderSerio/pokemand-go.git
@@ -120,24 +139,38 @@ Launch the Web UI:
 pkmg ui
 ```
 
+## Default Directory Model
+
+By default, `pkmg` uses user-level directories instead of repo-local `data/`.
+
+- Config root: `os.UserConfigDir()/pkmg`
+- Data root: `PKMG_DATA_DIR`, or configured `dataPath`, or `os.UserConfigDir()/pkmg`
+- Scripts root: `<data-root>/scripts`
+- Version snapshots: `<data-root>/.pkmg`
+
+Environment overrides:
+
+```bash
+export PKMG_CONFIG_DIR=/your/custom/config
+export PKMG_DATA_DIR=/your/custom/data
+```
+
+This keeps managed skills outside the repository by default, which is a better fit for reusable local tooling.
+
 ## Web UI
 
-The Web UI is intentionally lightweight.
+- Backend: Go HTTP server + WebSocket command transport
+- Frontend: a single embedded page
+- UI dependencies: loaded from CDN to keep the binary lean
 
-- Backend: Go HTTP server + WebSocket command channel
-- Frontend: single embedded HTML page
-- UI libraries: loaded from CDN
-
-Current local skill management flow:
+Current local skill workflow:
 
 - search local skills
 - create a new skill from the editor modal
-- edit existing skills
-- copy skills with system-style copy suffixes
-- switch back to previous versions
+- edit an existing skill with a lightweight code view
+- copy a skill with system-style copy naming
+- restore an older version
 - open the containing folder in the OS file browser
-
-The marketplace tab is intentionally hidden for now.
 
 ## Agent-Friendly Usage
 
@@ -152,23 +185,19 @@ pkmg inspect "<relative-path>" --json
 pkmg run "<relative-path>" [args...]
 ```
 
-This gives an agent a predictable local capability inventory without requiring it to parse the UI.
+That gives an agent a predictable local capability inventory without scraping the UI.
 
-For repo-specific agent guidance, see [AGENTS.md](./AGENTS.md).
-
-## Project Layout
-
-```text
-cmd/              Cobra commands and backend logic
-cmd/webui/        Embedded Web UI assets
-data/scripts/     Managed local skill scripts
-data/.pkmg/       Local metadata and version snapshots
-platform/         Reserved for future distribution wrappers
-```
+For repo-specific guidance aimed at agents, see [AGENTS.md](./AGENTS.md).
 
 ## Testing
 
-Build and smoke test locally:
+Automated:
+
+```bash
+go test ./...
+```
+
+Quick smoke flow:
 
 ```bash
 go build ./...
@@ -176,56 +205,3 @@ pkmg init
 pkmg list --json
 pkmg ui
 ```
-
-Useful manual checks:
-
-- create a skill from the UI
-- edit and save it
-- copy it
-- restore an earlier version
-- verify `inspect --json` reflects the latest state
-
-## Distribution Plan
-
-The core product should stay a Go binary.
-
-Recommended release order:
-
-1. `go install`
-2. GitHub Releases with multi-platform binaries
-3. Homebrew
-4. Windows package managers
-5. optional thin npm wrapper for Node-first environments
-
-The npm path, if added, should be a distribution wrapper around the Go binary, not a reimplementation of the core logic.
-
-## Development
-
-Build:
-
-```bash
-go build ./...
-```
-
-Run locally:
-
-```bash
-go run . --help
-go run . ui
-```
-
-Format:
-
-```bash
-gofmt -w cmd/*.go main.go
-```
-
-## Status
-
-`pkmg` is still early-stage. The current focus is:
-
-- strong local skill management
-- agent-friendly discovery and inspection
-- lightweight UX instead of a heavy platform
-
-Feedback and iteration ideas are welcome.

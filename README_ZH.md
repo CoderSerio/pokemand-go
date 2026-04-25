@@ -1,36 +1,55 @@
-[English](./README.md)
+# <div align="center">pkmg</div>
 
-# pkmg
+<div align="center">
 
-`pkmg` 是一个面向人类和 coding agent 的轻量、本地优先的 skill / script 管理器。
+_给人类和 coding agent 用的，本地优先 skill 管理器。_
 
-它的目标不是做一个很重的平台，而是把已经存在的本地脚本能力收口起来：让它们更容易被复用、更容易被 agent 检索和理解，同时提供一个足够轻的 Web UI 来完成新建、编辑、复制和版本切换。
+[![release](https://img.shields.io/github/v/release/CoderSerio/pokemand-go?display_name=tag&style=flat-square)](https://github.com/CoderSerio/pokemand-go/releases)
+[![ci](https://img.shields.io/github/actions/workflow/status/CoderSerio/pokemand-go/ci.yml?branch=main&style=flat-square&label=ci)](https://github.com/CoderSerio/pokemand-go/actions/workflows/ci.yml)
+[![go](https://img.shields.io/github/go-mod/go-version/CoderSerio/pokemand-go?style=flat-square)](https://go.dev/)
+[![license](https://img.shields.io/github/license/CoderSerio/pokemand-go?style=flat-square)](./LICENSE)
+[![local-first](https://img.shields.io/badge/local--first-yes-0f766e?style=flat-square)](#为什么是-pkmg)
+[![agent-ready](https://img.shields.io/badge/agent-ready-yes-1d4ed8?style=flat-square)](./AGENTS.md)
 
-## 为什么做这个
+[English](./README.md) · [快速开始](#快速开始) · [Web UI](#web-ui) · [Agent 用法](#面向-agent-的使用方式) · [测试](#测试)
 
-大多数本地自动化一开始都是一堆零散脚本。
+</div>
 
-但很快就会遇到这些问题：
+`pkmg` 把四散在本地的脚本能力收成一套可复用的 skill 库。
 
-- 多个 skill 依赖同一类脚本
-- 脚本分散在不同项目里，逐渐漂移
-- agent 不知道本地已经有哪些能力可以直接复用
-- 编辑、复制、回滚和版本记录都变得混乱
+它更像是本地 agent 工作流里的轻量脚本层管理器：负责检索、查看、编辑、版本化和运行已有 skill，而不是去做一个重平台。
 
-`pkmg` 主要解决的就是这一层本地能力治理问题：
+`pkmg` 是 `pokemand-go` 的命令行入口名，可以理解成一个用 Go 写的“口袋命令”管理器。
 
-- 把本地可复用 skill 统一放在一个位置管理
-- 让 agent 能够稳定地 list / search / inspect / run
-- 用一个轻量 Web UI 管理 skill
-- 保持主体很轻：Go 后端 + 单页 HTML + CDN 前端依赖
+## 为什么是 pkmg
 
-## 当前功能
+现在 `skill` 确实越来越像 agent 时代更自然的本地化方案。
 
-- 初始化本地 skill 工作区到 `data/`
-- 管理 `data/scripts/` 下的脚本
-- 支持 JSON 输出的列举和搜索
-- 查看脚本元数据和内容预览
-- 运行已管理脚本
+但本地化之后，还是会留下一个很具体的问题：
+
+- skill 里的脚本会越来越多
+- 同类能力会在不同项目和 skill 之间反复复制
+- 现有本地能力越来越难查、越来越难管
+- agent 想复用这些能力时，缺的是结构化检索入口，而不是更多目录
+
+`pkmg` 处理的就是这一层。
+
+它不替代 skill，而是为 skill 服务：把脚本这层能力统一管理起来，一次封装，到处复用，并且让 agent 能轻松上手已有能力。
+
+## 它现在是什么感觉
+
+- 默认本地优先，不依赖云端注册表
+- 从一开始就对 agent 友好，CLI 支持结构化 JSON 输出
+- 主体很轻，Go 后端 + 嵌入式页面 + CDN 前端依赖
+- 自带版本意识，脚本保存后会留下本地快照
+- 人也能顺手用，一个小 Web UI 就能完成新建、编辑、复制、回滚、打开目录
+
+## 当前能力
+
+- 初始化用户级 skill 工作区
+- 在独立的数据目录下管理脚本
+- 通过 CLI 完成 list / search / inspect / run
+- 为 agent 工作流提供结构化 JSON 输出
 - 启动一个轻量本地 Web UI，支持：
   - 本地 skill 列表
   - 搜索
@@ -48,7 +67,7 @@
 go install github.com/CoderSerio/pokemand-go@latest
 ```
 
-### 本地开发构建
+### 从源码构建
 
 ```bash
 git clone https://github.com/CoderSerio/pokemand-go.git
@@ -66,7 +85,7 @@ ln -sfn "$(pwd)/bin/pkmg" /opt/homebrew/bin/pkmg
 pkmg --version
 ```
 
-如果后续要移除这个全局测试链接：
+后续如果要移除这个全局测试链接：
 
 ```bash
 rm /opt/homebrew/bin/pkmg
@@ -120,28 +139,42 @@ pkmg run cleanup.sh arg1 arg2
 pkmg ui
 ```
 
+## 默认目录模型
+
+`pkmg` 现在默认使用用户级目录，而不是仓库内的 `data/`。
+
+- 配置根目录：`os.UserConfigDir()/pkmg`
+- 数据根目录：`PKMG_DATA_DIR`，或配置中的 `dataPath`，否则回退到 `os.UserConfigDir()/pkmg`
+- 脚本目录：`<data-root>/scripts`
+- 版本快照：`<data-root>/.pkmg`
+
+如果你想改到自己的位置：
+
+```bash
+export PKMG_CONFIG_DIR=/your/custom/config
+export PKMG_DATA_DIR=/your/custom/data
+```
+
+这样默认就不会把托管 skill 数据塞进仓库本身，更适合做可复用的本地工具层。
+
 ## Web UI
 
-Web UI 的设计目标就是轻量：
-
 - 后端：Go HTTP server + WebSocket 命令通道
-- 前端：单页嵌入式 HTML
-- 前端依赖：尽量通过 CDN 引入
+- 前端：单页嵌入式页面
+- 前端依赖：优先通过 CDN 引入，避免把主体做重
 
-当前本地 skill 管理流程支持：
+当前本地 skill 流程支持：
 
 - 搜索本地 skill
 - 在编辑弹窗里直接新建 skill
-- 编辑已有 skill
+- 用轻量代码视图编辑已有 skill
 - 按系统文件风格复制 skill
 - 切回历史版本
-- 打开 skill 所在目录
-
-Skill 市场 tab 当前有意隐藏，后续再看是否重新开放。
+- 在系统文件浏览器中打开所在目录
 
 ## 面向 Agent 的使用方式
 
-如果你想把 `pkmg` 接到 agent 工作流里，优先建议走结构化 CLI，而不是先让 agent 去解析 UI。
+如果你要把 `pkmg` 接进 agent 工作流，优先建议走结构化 CLI，而不是让 agent 去解析 UI。
 
 推荐命令：
 
@@ -152,23 +185,19 @@ pkmg inspect "<relative-path>" --json
 pkmg run "<relative-path>" [args...]
 ```
 
-这样 agent 可以稳定地拿到本地能力清单和元数据。
+这样 agent 可以稳定获得本地能力清单，而不是猜目录结构。
 
-如果你要给仓库内 agent 一份更明确的说明，可以看 [AGENTS.md](./AGENTS.md)。
-
-## 项目结构
-
-```text
-cmd/              Cobra 命令和后端逻辑
-cmd/webui/        内嵌 Web UI 资源
-data/scripts/     已管理的本地 skill 脚本
-data/.pkmg/       本地元数据和版本快照
-platform/         预留给未来平台分发包装层
-```
+更具体的 agent 集成说明见 [AGENTS.md](./AGENTS.md)。
 
 ## 测试
 
-本地构建和冒烟测试：
+自动化：
+
+```bash
+go test ./...
+```
+
+快速冒烟：
 
 ```bash
 go build ./...
@@ -176,56 +205,3 @@ pkmg init
 pkmg list --json
 pkmg ui
 ```
-
-比较有价值的手工检查：
-
-- 在 UI 里新建一个 skill
-- 编辑并保存
-- 复制 skill
-- 切回历史版本
-- 确认 `inspect --json` 反映的是最新状态
-
-## 分发思路
-
-核心产品建议始终保持为 Go 二进制。
-
-推荐的分发顺序：
-
-1. `go install`
-2. GitHub Releases 多平台二进制
-3. Homebrew
-4. Windows 包管理器
-5. 可选的 npm 薄包装
-
-如果以后接 npm，建议只把它当成 Go 二进制的分发包装层，而不是用 JS 重写核心逻辑。
-
-## 开发
-
-构建：
-
-```bash
-go build ./...
-```
-
-本地运行：
-
-```bash
-go run . --help
-go run . ui
-```
-
-格式化：
-
-```bash
-gofmt -w cmd/*.go main.go
-```
-
-## 当前阶段
-
-`pkmg` 现在还在早期阶段，重点在：
-
-- 把本地 skill 管理做好
-- 给 agent 稳定的 discovery / inspect 能力
-- 保持整体足够轻，而不是过早平台化
-
-欢迎继续迭代和收敛方向。

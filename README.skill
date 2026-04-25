@@ -1,0 +1,191 @@
+# README.skill
+
+Purpose: accumulate a reusable playbook for writing project READMEs that feel like a product entry page instead of a plain repository note.
+
+This file is intentionally tracked as `README.skill` instead of `*.md`, so it stays in git without weakening the repository rule that most generated or temporary docs should be ignored.
+
+## Core Goal
+
+A good README should do four jobs in one screen:
+
+1. tell people what the project is
+2. tell them why it should exist
+3. let them try it immediately
+4. help both humans and agents navigate the repo correctly
+
+If the top of the README cannot do those four things quickly, the page is still too weak.
+
+## Hero Recipe
+
+Preferred opening structure:
+
+1. centered project title
+2. one-line product sentence
+3. badge row
+4. quick links row
+5. two short paragraphs:
+   one for "what it is"
+   one for "why now / why this project exists"
+
+Good hero qualities:
+
+- product language, not internal implementation language
+- sharp scope boundary
+- visible momentum
+- no vague "all-in-one" claims
+
+Bad hero qualities:
+
+- starts with folder structure
+- starts with installation details
+- too many paragraphs before first action
+- only describes implementation choices
+
+## Badge Recipe
+
+Badges are not decoration only. They are compressed metadata.
+
+Recommended badge categories:
+
+- latest release
+- CI status
+- runtime or language version
+- license
+- 1 to 3 product tags such as local-first / agent-ready / lightweight / versioned
+
+Rules:
+
+- prefer flat-square style for consistency
+- avoid badge overload
+- do not add vanity badges with no user value
+
+## Section Order
+
+Default README order:
+
+1. Hero
+2. Why
+3. What it feels like / key traits
+4. Current features
+5. Installation
+6. Quick start
+7. Important runtime model or path model
+8. UI / architecture overview if relevant
+9. Agent usage
+10. Testing
+11. Distribution
+12. Status / next direction
+
+This order works well because it mirrors how readers evaluate a tool:
+
+- should I care
+- can I trust it
+- can I run it
+- can I integrate it
+
+## Bilingual Strategy
+
+For bilingual repos:
+
+- keep `README.md` as the English landing page
+- keep `README_ZH.md` as the Chinese counterpart
+- place a cross-link near the top of both files
+- keep the structure roughly mirrored
+- localize tone, not just words
+
+Do not translate mechanically. Chinese and English landing pages often need different rhythm.
+
+## Agent Section Pattern
+
+If the project is agent-related, include an explicit agent-facing section.
+
+That section should answer:
+
+- what machine-readable surface should be used first
+- what paths or identifiers are stable
+- which commands are safe to call
+- what assumptions are unsafe
+
+If the repo also includes `AGENTS.md`, the README should link to it instead of duplicating every detail.
+
+## Tone
+
+Preferred tone:
+
+- direct
+- product-aware
+- technically grounded
+- slightly opinionated
+
+Avoid:
+
+- marketing noise
+- apology language
+- generic "powerful / flexible / robust" filler
+- implementation detail before value statement
+
+## Maintenance Checklist
+
+Every README pass should verify:
+
+- top badges still resolve
+- installation command is still correct
+- quick start still works
+- path model still matches the code
+- test command still works
+- release/distribution story is still current
+- agent instructions still reflect actual CLI behavior
+
+## Rewrite Heuristics
+
+When improving an existing README, do not just "add more". First remove weak content.
+
+Priority order:
+
+1. fix factual drift
+2. sharpen the hero
+3. improve navigation
+4. improve quick start
+5. compress low-value prose
+6. add style accents only after structure is strong
+
+## Anti-Patterns
+
+Common failures:
+
+- README reads like internal notes
+- value proposition is missing
+- there is no quick path to first success
+- doc still references deleted architecture
+- agent projects forget to document structured interfaces
+- bilingual docs diverge and become inconsistent
+
+## Reusable Snippets
+
+Hero skeleton:
+
+```text
+# <div align="center">ProjectName</div>
+
+<div align="center">
+
+_One-line product sentence._
+
+[badge 1][badge 2][badge 3]
+
+[Language A] · [Section A] · [Section B] · [Section C]
+
+</div>
+```
+
+Quick-start rule:
+
+- the first runnable command block should appear before the reader has to scroll too far
+
+Agent rule:
+
+- always expose the structured interface before mentioning the UI
+
+## Repository Rule
+
+If this repo keeps most docs out of git, reusable doc skills should live in explicitly named tracked files like `README.skill`, not in a broad `docs/` tree.

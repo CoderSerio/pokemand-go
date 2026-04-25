@@ -4,18 +4,13 @@ This file explains how agents should interact with `pkmg`.
 
 ## What pkmg is
 
-`pkmg` is a local-first skill manager built around scripts stored under `data/scripts/`.
+`pkmg` is a local-first skill manager for reusable scripts.
 
-It is useful when an agent needs to:
-
-- discover what local reusable skills already exist
-- inspect a skill before execution
-- run a known local skill
-- ask a user to open the Web UI for interactive management
+Its job is to give agents a predictable way to discover, inspect, and run local capabilities that are already installed on the machine, while keeping human editing and version management simple through a lightweight Web UI.
 
 ## Prefer the CLI JSON surface
 
-When an agent needs local capability discovery, use the structured CLI first.
+When an agent needs capability discovery or execution planning, use the structured CLI first.
 
 Preferred commands:
 
@@ -30,15 +25,26 @@ Why:
 
 - the output is machine-readable
 - it avoids scraping the UI
-- it keeps the local workflow predictable
+- it keeps local automation predictable
+- it lets humans keep the UI as a management surface, not an integration surface
 
-## Expected path model
+## Path model
 
-- Managed scripts live under `data/scripts/`
-- Script identities are relative paths from that directory
-- Example:
-  - `cleanup.sh`
-  - `team/deploy.sh`
+Managed scripts do not need to live inside the repository.
+
+Default directory model:
+
+- config root: `os.UserConfigDir()/pkmg`
+- data root: `PKMG_DATA_DIR`, configured `dataPath`, or `os.UserConfigDir()/pkmg`
+- scripts root: `<data-root>/scripts`
+- version root: `<data-root>/.pkmg`
+
+Script identities are always relative to the scripts root.
+
+Examples:
+
+- `cleanup.sh`
+- `team/deploy.sh`
 
 When invoking `pkmg inspect` or `pkmg run`, use those relative paths.
 
@@ -46,10 +52,12 @@ When invoking `pkmg inspect` or `pkmg run`, use those relative paths.
 
 Recommended flow for agents:
 
-1. Call `pkmg list --json` to get the current local inventory.
-2. If needed, narrow candidates with `pkmg search "<query>" --json`.
-3. Inspect a chosen skill with `pkmg inspect "<path>" --json`.
+1. Call `pkmg list --json` to get the local inventory.
+2. Narrow candidates with `pkmg search "<query>" --json` when needed.
+3. Inspect the chosen skill with `pkmg inspect "<path>" --json`.
 4. Only then run it with `pkmg run "<path>" [args...]`.
+
+This reduces accidental execution and gives the agent a chance to verify metadata first.
 
 ## When to use the Web UI
 
@@ -61,7 +69,7 @@ Use `pkmg ui` when a human needs interactive management such as:
 - restoring an older version
 - opening the skill directory in the OS file browser
 
-Agents should still prefer the CLI JSON surface for non-interactive automation.
+Agents should still prefer the CLI JSON surface for automation.
 
 ## Current command surface
 
@@ -80,22 +88,22 @@ pkmg ui
 ## Important limitations
 
 - There is no stable remote API yet.
-- The marketplace tab is intentionally hidden.
-- The Web UI uses a local WebSocket schema, but that schema is currently an internal UI transport, not a public remote integration contract.
-- Managed skill creation is currently exposed through the UI, not through a dedicated public CLI subcommand.
+- The Web UI uses a local WebSocket schema, but that schema is currently an internal UI transport, not a public contract.
+- Managed skill creation is currently exposed through the UI, not through a dedicated public CLI create command.
 
 ## Safe assumptions
 
 Agents may safely assume:
 
-- `pkmg list --json` returns the current known inventory
-- `pkmg inspect --json` returns metadata plus a preview or content details
+- `pkmg list --json` returns the current local inventory
+- `pkmg search --json` returns filtered candidates
+- `pkmg inspect --json` returns metadata plus content details
 - `pkmg run` executes a local script via shell
 - `pkmg ui` starts a local-only management interface
 
 Agents should not assume:
 
 - cloud sync
-- package registry support
+- remote registry support
 - public marketplace availability
-- stable third-party distribution wrappers yet
+- a stable third-party integration protocol yet
