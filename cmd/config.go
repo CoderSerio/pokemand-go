@@ -79,8 +79,8 @@ func listConfigInfo() {
 }
 
 func getConfigFilePath() string {
-	dataDir := GetDataDir()
-	return filepath.Join(dataDir, "meta.json")
+	configDir := GetConfigDir()
+	return filepath.Join(configDir, "meta.json")
 }
 
 func GetConfig() (string, error) {
@@ -118,8 +118,8 @@ func SetConfig(key string, value string) error {
 		return err
 	}
 
-	dataDir := GetDataDir()
-	if err := os.MkdirAll(dataDir, 0755); err != nil {
+	configDir := GetConfigDir()
+	if err := os.MkdirAll(configDir, 0755); err != nil {
 		return err
 	}
 	return os.WriteFile(configPath, updatedContent, 0644)

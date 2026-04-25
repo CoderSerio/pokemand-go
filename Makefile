@@ -3,7 +3,7 @@ LDFLAGS := -X github.com/CoderSerio/pokemand-go/cmd.Version=$(VERSION)
 PLATFORMS := linux/amd64 darwin/amd64 windows/amd64
 BINARY_NAME := pkmg
 
-.PHONY: all build clean install release
+.PHONY: all build clean install release release-dry-run
 
 all: build
 
@@ -21,6 +21,14 @@ clean:
 # 发布新版本
 release:
 	goreleaser release --clean
+
+release-dry-run:
+	@test -n "$(RELEASE_VERSION)" || (echo "Usage: make release-dry-run RELEASE_VERSION=v0.1.0" && exit 1)
+	@git rev-parse "$(RELEASE_VERSION)" >/dev/null 2>&1 && (echo "Tag already exists: $(RELEASE_VERSION)" && exit 1) || true
+	@set -e; \
+	git tag "$(RELEASE_VERSION)"; \
+	trap 'git tag -d "$(RELEASE_VERSION)" >/dev/null 2>&1 || true' EXIT; \
+	goreleaser release --clean --skip=publish,announce
 
 
 # 发布多平台二进制文件

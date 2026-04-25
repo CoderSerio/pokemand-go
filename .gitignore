@@ -23,3 +23,11 @@ Thumbs.db
 
 # Project specific
 data/
+
+# Documentation
+openspec/
+docs/
+*.md
+!README.md
+!README_ZH.md
+!AGENTS.md

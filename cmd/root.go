@@ -4,6 +4,7 @@ Copyright © 2025 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -18,6 +19,8 @@ var (
 
 var dataDir string
 var dataDirOnce sync.Once
+var configDir string
+var configDirOnce sync.Once
 
 var rootCmd = &cobra.Command{
 	Use:   "pkmg",
@@ -43,16 +46,70 @@ func Execute() {
 	}
 }
 
-func GetDataDir() string {
-	dataDirOnce.Do(func() {
-		// 使用当前工作目录
-		cwd, err := os.Getwd()
-		if err != nil {
-			fmt.Println("获取当前工作目录失败:", err)
+func GetConfigDir() string {
+	configDirOnce.Do(func() {
+		if envPath := os.Getenv("PKMG_CONFIG_DIR"); envPath != "" {
+			configDir = envPath
 			return
 		}
-		dataDir = filepath.Join(cwd, "data")
+
+		userConfigDir, err := os.UserConfigDir()
+		if err != nil {
+			fmt.Println("获取用户配置目录失败:", err)
+			return
+		}
+		configDir = filepath.Join(userConfigDir, "pkmg")
+	})
+
+	return configDir
+}
+
+func GetDataDir() string {
+	dataDirOnce.Do(func() {
+		if envPath := os.Getenv("PKMG_DATA_DIR"); envPath != "" {
+			dataDir = envPath
+			return
+		}
+
+		if configuredPath := readConfiguredDataDir(); configuredPath != "" {
+			dataDir = configuredPath
+			return
+		}
+
+		userConfigDir, err := os.UserConfigDir()
+		if err != nil {
+			fmt.Println("获取用户数据目录失败:", err)
+			return
+		}
+		dataDir = filepath.Join(userConfigDir, "pkmg")
 	})
 
 	return dataDir
+}
+
+func resetPathCaches() {
+	dataDir = ""
+	configDir = ""
+	dataDirOnce = sync.Once{}
+	configDirOnce = sync.Once{}
+}
+
+func readConfiguredDataDir() string {
+	configPath := filepath.Join(GetConfigDir(), "meta.json")
+	content, err := os.ReadFile(configPath)
+	if err != nil {
+		return ""
+	}
+
+	var config map[string]interface{}
+	if err := json.Unmarshal(content, &config); err != nil {
+		return ""
+	}
+
+	value, ok := config["dataPath"].(string)
+	if !ok || value == "" {
+		return ""
+	}
+
+	return value
 }

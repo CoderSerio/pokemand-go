@@ -7,14 +7,14 @@ import (
 )
 
 var (
-	search     string
-	listAsJSON bool
+	searchAsJSON bool
 )
 
-var listCmd = &cobra.Command{
-	Use:   "list",
-	Short: "列出文件",
-	Long:  "列出所有文件",
+var searchCmd = &cobra.Command{
+	Use:   "search [query]",
+	Short: "搜索脚本",
+	Long:  "按名称或相对路径搜索已管理脚本",
+	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		scripts, err := listManagedScripts(0)
 		if err != nil {
@@ -22,16 +22,15 @@ var listCmd = &cobra.Command{
 			return
 		}
 
-		results := filterScriptsBySearch(scripts, search)
-
-		if listAsJSON {
+		results := filterScriptsBySearch(scripts, args[0])
+		if searchAsJSON {
 			payload := struct {
+				Query   string       `json:"query"`
 				Count   int          `json:"count"`
-				Search  string       `json:"search,omitempty"`
 				Scripts []ScriptInfo `json:"scripts"`
 			}{
+				Query:   args[0],
 				Count:   len(results),
-				Search:  search,
 				Scripts: results,
 			}
 			if err := printJSON(payload); err != nil {
@@ -41,11 +40,7 @@ var listCmd = &cobra.Command{
 		}
 
 		if len(results) == 0 {
-			if search != "" {
-				fmt.Printf("没有找到包含 '%s' 的文件\n", search)
-			} else {
-				fmt.Printf("%s 目录为空\n", getScriptsDir())
-			}
+			fmt.Printf("没有找到包含 '%s' 的文件\n", args[0])
 			return
 		}
 
@@ -56,7 +51,6 @@ var listCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(listCmd)
-	listCmd.Flags().StringVarP(&search, "search", "s", "", "搜索文件")
-	listCmd.Flags().BoolVar(&listAsJSON, "json", false, "以 JSON 输出文件列表")
+	rootCmd.AddCommand(searchCmd)
+	searchCmd.Flags().BoolVar(&searchAsJSON, "json", false, "以 JSON 输出搜索结果")
 }

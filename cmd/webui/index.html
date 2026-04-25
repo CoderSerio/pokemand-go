@@ -1,0 +1,635 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>pkmg ui</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.11.1/styles/github-dark-dimmed.min.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/vue@3.5.13/dist/vue.global.prod.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.11.1/highlight.min.js"></script>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #09111c;
+        --bg-soft: #0f1726;
+        --panel: rgba(13, 20, 33, 0.82);
+        --panel-2: rgba(21, 31, 49, 0.92);
+        --line: rgba(173, 216, 255, 0.12);
+        --text: #eef5fb;
+        --muted: #9db0c7;
+        --brand: #7ad8ff;
+        --brand-2: #93ffd7;
+        --warm: #ffd59e;
+        --danger: #ff9f9f;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background:
+          radial-gradient(circle at 12% 8%, rgba(122, 216, 255, 0.22), transparent 0 24%),
+          radial-gradient(circle at 88% 12%, rgba(147, 255, 215, 0.14), transparent 0 20%),
+          radial-gradient(circle at 50% 100%, rgba(255, 213, 158, 0.09), transparent 0 28%),
+          linear-gradient(180deg, #0a1220 0%, #09111c 45%, #081019 100%);
+        color: var(--text);
+        min-height: 100vh;
+      }
+
+      a {
+        color: var(--brand);
+      }
+
+      .app-shell {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 32px 20px 64px;
+      }
+
+      .topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 20px;
+        margin-bottom: 24px;
+      }
+
+      .title-wrap h1 {
+        margin: 0;
+        font-size: 32px;
+        letter-spacing: 0.02em;
+      }
+
+      .title-wrap p {
+        margin: 10px 0 0;
+        color: var(--muted);
+        max-width: 720px;
+        line-height: 1.5;
+      }
+
+      .tag {
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.04);
+        backdrop-filter: blur(10px);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+        border-radius: 999px;
+        padding: 8px 12px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .toolbar {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        margin-bottom: 18px;
+        flex-wrap: wrap;
+        padding: 14px;
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+        backdrop-filter: blur(16px);
+      }
+
+      .search-input,
+      .editor-input,
+      .editor-textarea,
+      .editor-select {
+        width: 100%;
+        border: 1px solid var(--line);
+        background: rgba(8, 13, 24, 0.9);
+        color: var(--text);
+        border-radius: 12px;
+        padding: 12px 14px;
+        outline: none;
+      }
+
+      .search-input {
+        max-width: 420px;
+      }
+
+      .button {
+        border: 1px solid var(--line);
+        background: rgba(12, 18, 30, 0.86);
+        color: var(--text);
+        border-radius: 12px;
+        padding: 10px 14px;
+        cursor: pointer;
+        transition: transform 120ms ease, border-color 120ms ease, background 120ms ease;
+      }
+
+      .button:hover {
+        transform: translateY(-1px);
+        border-color: rgba(122, 216, 255, 0.24);
+      }
+
+      .button.primary {
+        background: linear-gradient(135deg, rgba(122, 216, 255, 0.2), rgba(147, 255, 215, 0.14));
+        border-color: rgba(122, 216, 255, 0.34);
+      }
+
+      .button.danger {
+        border-color: rgba(255, 140, 140, 0.25);
+        color: var(--danger);
+      }
+
+      .button.danger:hover {
+        border-color: rgba(255, 159, 159, 0.4);
+      }
+
+      .grid {
+        display: grid;
+        gap: 16px;
+      }
+
+      .skill-card {
+        border: 1px solid var(--line);
+        background:
+          linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.025)),
+          linear-gradient(135deg, rgba(122,216,255,0.03), rgba(147,255,215,0.02));
+        border-radius: 18px;
+        padding: 18px;
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.18);
+      }
+
+      .skill-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        align-items: flex-start;
+      }
+
+      .skill-head h3 {
+        margin: 0;
+        font-size: 20px;
+      }
+
+      .skill-path {
+        margin-top: 6px;
+        color: var(--brand);
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 12px;
+      }
+
+      .skill-summary {
+        color: var(--muted);
+        margin: 12px 0 16px;
+        line-height: 1.5;
+      }
+
+      .meta-row {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .action-row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 16px;
+      }
+
+      .version-row {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-top: 16px;
+        padding-top: 16px;
+        border-top: 1px solid var(--line);
+      }
+
+      .version-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .version-pill {
+        padding: 6px 10px;
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .state-card,
+      .market-card {
+        border: 1px solid var(--line);
+        background: var(--panel);
+        backdrop-filter: blur(14px);
+        border-radius: 16px;
+        padding: 18px;
+      }
+
+      .modal {
+        position: fixed;
+        inset: 0;
+        background: rgba(4, 8, 15, 0.78);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+
+      .modal-body {
+        width: min(1100px, 100%);
+        max-height: calc(100vh - 40px);
+        overflow: auto;
+        border: 1px solid var(--line);
+        background:
+          radial-gradient(circle at top right, rgba(122, 216, 255, 0.08), transparent 0 28%),
+          #0d1522;
+        border-radius: 22px;
+        padding: 18px;
+        box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+      }
+
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        align-items: center;
+        margin-bottom: 16px;
+      }
+
+      .modal-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+        gap: 16px;
+      }
+
+      .editor-panel,
+      .preview-panel {
+        border: 1px solid var(--line);
+        background: rgba(10, 16, 28, 0.88);
+        border-radius: 16px;
+        padding: 14px;
+      }
+
+      .editor-textarea {
+        min-height: 420px;
+        resize: vertical;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        line-height: 1.5;
+      }
+
+      .preview-panel pre {
+        margin: 0;
+        border-radius: 12px;
+        overflow: auto;
+      }
+
+      .preview-panel code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      }
+
+      .side-note {
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .status-text {
+        color: var(--muted);
+      }
+
+      .section-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 16px;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        font-size: 12px;
+      }
+
+      .editor-grid {
+        display: grid;
+        gap: 12px;
+        margin-bottom: 14px;
+      }
+
+      @media (max-width: 900px) {
+        .modal-layout {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app" class="app-shell">
+      <div class="topbar">
+        <div class="title-wrap">
+          <h1>pkmg ui</h1>
+          <p>面向 skill 和 agent 的轻量本地能力管理界面。操作统一走 WebSocket schema，先把本地 skill 的新建、编辑、版本和复用做顺手。</p>
+        </div>
+        <div class="tag">{{ appVersion }}</div>
+      </div>
+
+      <div class="section-label">
+        <span>Local Skills</span>
+      </div>
+
+        <div class="toolbar">
+          <input class="search-input" v-model.trim="searchQuery" @input="debouncedLoadLocal()" placeholder="搜索标题、简介或路径" />
+          <button class="button primary" @click="openCreateEditor()">新建 Skill</button>
+          <button class="button" @click="loadLocalSkills()">刷新</button>
+          <span class="status-text">{{ localStatus }}</span>
+        </div>
+
+        <div class="grid">
+          <div v-if="localSkills.length === 0" class="state-card">
+            <strong>还没有可展示的本地 skill</strong>
+            <p class="side-note">当前扫描目录：{{ bootstrap.local.scriptsDir || '-' }}。先创建脚本，再用这个界面统一管理。</p>
+          </div>
+
+          <div v-for="skill in localSkills" :key="skill.id" class="skill-card">
+            <div class="skill-head">
+              <div>
+                <h3>{{ skill.title }}</h3>
+                <div class="skill-path">{{ skill.relativePath }}</div>
+              </div>
+              <div class="tag">v{{ skill.versionCount }}</div>
+            </div>
+
+            <div class="skill-summary">{{ skill.summary }}</div>
+
+            <div class="meta-row">
+              <span>创建时间 {{ formatDate(skill.createdAt) }}</span>
+              <span>更新时间 {{ formatDate(skill.updatedAt) }}</span>
+            </div>
+
+            <div class="action-row">
+              <button class="button primary" @click="openEditor(skill.id)">编辑</button>
+              <button class="button" @click="copySkill(skill.id)">复制</button>
+              <button class="button" @click="openSkillDir(skill.id)">打开目录</button>
+              <button class="button danger" @click="deleteSkill(skill.id)">删除</button>
+            </div>
+
+            <div class="version-row">
+              <select class="editor-select" style="max-width: 220px" v-model="selectedVersions[skill.id]">
+                <option :value="null">选择历史版本</option>
+                <option v-for="version in skill.versions.slice().reverse()" :key="version.number" :value="version.number">
+                  {{ version.label }} · {{ formatDate(version.savedAt) }}
+                </option>
+              </select>
+              <button class="button danger" :disabled="!selectedVersions[skill.id]" @click="restoreVersion(skill.id, selectedVersions[skill.id])">
+                切换到选中版本
+              </button>
+              <div class="version-list">
+                <span class="version-pill" v-for="version in skill.versions.slice(-4)" :key="version.number">
+                  {{ version.label }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      <div v-if="editor.open" class="modal" @click.self="closeEditor">
+        <div class="modal-body">
+          <div class="modal-header">
+            <div>
+              <h2 style="margin: 0">{{ editor.mode === 'create' ? '新建 Skill' : (editor.skill?.title || '编辑 Skill') }}</h2>
+              <div class="skill-path">{{ editor.mode === 'create' ? '创建新的本地 skill 文件' : editor.skill?.relativePath }}</div>
+            </div>
+            <div class="action-row">
+              <button class="button primary" @click="saveEditor()">{{ editor.mode === 'create' ? '创建' : '保存' }}</button>
+              <button
+                v-if="editor.mode === 'edit' && editor.skill"
+                class="button danger"
+                @click="deleteSkill(editor.skill.id, true)"
+              >
+                删除
+              </button>
+              <button class="button" @click="closeEditor">关闭</button>
+            </div>
+          </div>
+
+          <div class="modal-layout">
+            <div class="editor-panel">
+              <div class="editor-grid">
+                <input
+                  v-if="editor.mode === 'create'"
+                  class="editor-input"
+                  v-model.trim="editor.path"
+                  placeholder="例如: team/deploy.sh 或 cleanup"
+                />
+              </div>
+              <div class="side-note" style="margin-bottom: 10px">轻量编辑区</div>
+              <textarea class="editor-textarea" v-model="editor.content"></textarea>
+            </div>
+
+            <div class="preview-panel">
+              <div class="side-note" style="margin-bottom: 10px">高亮预览</div>
+              <pre><code class="language-bash" v-html="highlightedContent"></code></pre>
+
+              <div style="margin-top: 16px">
+                <div class="side-note" style="margin-bottom: 8px">版本记录</div>
+                <div class="version-list">
+                  <span v-if="editor.mode === 'create'" class="version-pill">首次保存后生成 v1</span>
+                  <span v-for="version in editor.skill?.versions || []" :key="version.number" class="version-pill">
+                    {{ version.label }} · {{ formatDate(version.savedAt) }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const WS_TOKEN = "__PKMG_WS_TOKEN__";
+      const { createApp } = Vue;
+
+      createApp({
+        data() {
+          return {
+            appVersion: "connecting",
+            bootstrap: {
+              local: {},
+              market: {},
+            },
+            ws: null,
+            pending: new Map(),
+            requestId: 0,
+            searchQuery: "",
+            localSkills: [],
+            localStatus: "",
+            selectedVersions: {},
+            editor: {
+              open: false,
+              mode: "edit",
+              skill: null,
+              path: "",
+              content: "",
+            },
+            searchTimer: null,
+          };
+        },
+        computed: {
+          highlightedContent() {
+            try {
+              return hljs.highlight(this.editor.content || "", { language: "bash" }).value;
+            } catch (error) {
+              return (this.editor.content || "").replace(/[&<>]/g, (char) => ({
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+              }[char]));
+            }
+          },
+        },
+        async mounted() {
+          await this.connect();
+          await this.bootstrapApp();
+          await this.loadLocalSkills();
+        },
+        methods: {
+          async connect() {
+            const protocol = window.location.protocol === "https:" ? "wss" : "ws";
+            const wsURL = `${protocol}://${window.location.host}/ws?token=${WS_TOKEN}`;
+            this.ws = new WebSocket(wsURL);
+
+            await new Promise((resolve, reject) => {
+              this.ws.onopen = resolve;
+              this.ws.onerror = reject;
+            });
+
+            this.ws.onmessage = (event) => {
+              const message = JSON.parse(event.data);
+              if (message.type !== "response" || !message.id) return;
+              const pending = this.pending.get(message.id);
+              if (!pending) return;
+              this.pending.delete(message.id);
+              if (message.ok) {
+                pending.resolve(message.data);
+              } else {
+                pending.reject(new Error(message.error?.message || "Unknown error"));
+              }
+            };
+          },
+          request(action, payload = {}) {
+            const id = `req_${++this.requestId}`;
+            const message = {
+              version: "1.0",
+              type: "request",
+              id,
+              action,
+              payload,
+            };
+
+            return new Promise((resolve, reject) => {
+              this.pending.set(id, { resolve, reject });
+              this.ws.send(JSON.stringify(message));
+            });
+          },
+          async bootstrapApp() {
+            const data = await this.request("app.bootstrap");
+            this.bootstrap = data;
+            this.appVersion = `${data.app.name} ${data.app.version}`;
+          },
+          async loadLocalSkills() {
+            this.localStatus = "加载中...";
+            try {
+              const data = await this.request("skills.list", { query: this.searchQuery });
+              this.localSkills = data;
+              this.localStatus = `${data.length} 个本地 skill`;
+            } catch (error) {
+              this.localStatus = error.message;
+            }
+          },
+          debouncedLoadLocal() {
+            window.clearTimeout(this.searchTimer);
+            this.searchTimer = window.setTimeout(() => this.loadLocalSkills(), 180);
+          },
+          async openEditor(id) {
+            const detail = await this.request("skills.get", { id });
+            this.editor.open = true;
+            this.editor.mode = "edit";
+            this.editor.skill = detail;
+            this.editor.path = detail.relativePath;
+            this.editor.content = detail.content || "";
+          },
+          openCreateEditor() {
+            this.editor.open = true;
+            this.editor.mode = "create";
+            this.editor.skill = null;
+            this.editor.path = "";
+            this.editor.content = "#!/bin/sh\n# Describe this skill\n\n";
+          },
+          closeEditor() {
+            this.editor.open = false;
+            this.editor.mode = "edit";
+            this.editor.skill = null;
+            this.editor.path = "";
+            this.editor.content = "";
+          },
+          async saveEditor() {
+            let detail;
+            if (this.editor.mode === "create") {
+              detail = await this.request("skills.create", {
+                path: this.editor.path,
+                content: this.editor.content,
+              });
+            } else {
+              if (!this.editor.skill) return;
+              detail = await this.request("skills.save", {
+                id: this.editor.skill.id,
+                content: this.editor.content,
+              });
+            }
+
+            this.editor.mode = "edit";
+            this.editor.skill = detail;
+            this.editor.path = detail.relativePath;
+            this.editor.content = detail.content || "";
+            await this.loadLocalSkills();
+          },
+          async copySkill(id) {
+            await this.request("skills.copy", { id });
+            await this.loadLocalSkills();
+          },
+          async deleteSkill(id, closeAfterDelete = false) {
+            if (!window.confirm(`确认删除 ${id} 吗？这会同时移除脚本文件和本地版本记录。`)) {
+              return;
+            }
+
+            await this.request("skills.delete", { id });
+            await this.loadLocalSkills();
+
+            if (closeAfterDelete || (this.editor.open && this.editor.skill?.id === id)) {
+              this.closeEditor();
+            }
+          },
+          async openSkillDir(id) {
+            await this.request("skills.openDir", { id });
+          },
+          async restoreVersion(id, version) {
+            if (!version) return;
+            await this.request("skills.restoreVersion", { id, version: Number(version) });
+            this.selectedVersions[id] = null;
+            await this.loadLocalSkills();
+            if (this.editor.open && this.editor.skill?.id === id) {
+              await this.openEditor(id);
+            }
+          },
+          formatDate(value) {
+            if (!value) return "-";
+            return new Date(value).toLocaleString();
+          },
+        },
+      }).mount("#app");
+    </script>
+  </body>
+</html>

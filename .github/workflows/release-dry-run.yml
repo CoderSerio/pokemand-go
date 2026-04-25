@@ -1,0 +1,90 @@
+name: Release Dry Run
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Release version to validate, for example 0.1.0 or v0.1.0
+        required: true
+        type: string
+
+run-name: Release Dry Run ${{ inputs.version }}
+
+concurrency:
+  group: release-dry-run-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  preflight:
+    name: Validate Release Pipeline
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Normalize version
+        id: version
+        shell: bash
+        run: |
+          RAW="${{ inputs.version }}"
+          if [[ ! "$RAW" =~ ^v?[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z.-]+)?$ ]]; then
+            echo "Invalid version: $RAW"
+            echo "Expected a SemVer-like value such as 0.1.0 or v0.1.0"
+            exit 1
+          fi
+
+          if [[ "$RAW" =~ ^v ]]; then
+            TAG="$RAW"
+          else
+            TAG="v$RAW"
+          fi
+
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Ensure tag does not already exist
+        shell: bash
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "Tag already exists: $TAG"
+            exit 1
+          fi
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Verify modules are tidy
+        run: |
+          go mod tidy
+          git diff --exit-code -- go.mod go.sum
+
+      - name: Run tests
+        run: go test ./...
+
+      - name: Create temporary local tag
+        run: git tag "${{ steps.version.outputs.tag }}"
+
+      - name: Run GoReleaser dry run
+        uses: goreleaser/goreleaser-action@v7
+        with:
+          distribution: goreleaser
+          version: "~> v2"
+          args: release --clean --skip=publish,announce
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload dist artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ steps.version.outputs.tag }}
+          path: dist/*
+          if-no-files-found: error
+          retention-days: 7
