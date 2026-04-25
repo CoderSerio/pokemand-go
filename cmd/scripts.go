@@ -42,7 +42,7 @@ func ensureScriptsDir() (string, error) {
 func listManagedScripts(previewLines int) ([]ScriptInfo, error) {
 	scriptsDir, err := ensureScriptsDir()
 	if err != nil {
-		return nil, fmt.Errorf("创建脚本目录失败: %w", err)
+		return nil, fmt.Errorf("failed to prepare scripts directory: %w", err)
 	}
 
 	var scripts []ScriptInfo
@@ -62,7 +62,7 @@ func listManagedScripts(previewLines int) ([]ScriptInfo, error) {
 		return nil
 	})
 	if err != nil {
-		return nil, fmt.Errorf("读取脚本目录失败: %w", err)
+		return nil, fmt.Errorf("failed to read scripts directory: %w", err)
 	}
 
 	sort.Slice(scripts, func(i, j int) bool {
@@ -75,7 +75,7 @@ func listManagedScripts(previewLines int) ([]ScriptInfo, error) {
 func findManagedScript(path string, previewLines int) (ScriptInfo, error) {
 	scriptsDir, err := ensureScriptsDir()
 	if err != nil {
-		return ScriptInfo{}, fmt.Errorf("创建脚本目录失败: %w", err)
+		return ScriptInfo{}, fmt.Errorf("failed to prepare scripts directory: %w", err)
 	}
 
 	candidates := []string{
@@ -92,7 +92,7 @@ func findManagedScript(path string, previewLines int) (ScriptInfo, error) {
 			return ScriptInfo{}, err
 		}
 		if fileInfo.IsDir() {
-			return ScriptInfo{}, fmt.Errorf("目标是目录，不是文件: %s", candidate)
+			return ScriptInfo{}, fmt.Errorf("target is a directory, not a file: %s", candidate)
 		}
 
 		return buildScriptInfo(scriptsDir, candidate, previewLines)

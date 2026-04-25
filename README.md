@@ -75,22 +75,6 @@ cd pokemand-go
 go build -o bin/pkmg .
 ```
 
-### Local global symlink for testing
-
-On macOS, if `/opt/homebrew/bin` is already in your `PATH`:
-
-```bash
-go build -o bin/pkmg .
-ln -sfn "$(pwd)/bin/pkmg" /opt/homebrew/bin/pkmg
-pkmg --version
-```
-
-Remove the symlink later if needed:
-
-```bash
-rm /opt/homebrew/bin/pkmg
-```
-
 ## Quick Start
 
 Initialize the workspace:

@@ -13,19 +13,19 @@ var (
 
 var inspectCmd = &cobra.Command{
 	Use:   "inspect [path]",
-	Short: "查看脚本详情",
-	Long:  "查看已管理脚本的元数据、路径、权限和内容预览",
+	Short: "Inspect a managed skill script",
+	Long:  "Show metadata, paths, permissions, and content preview for a managed skill script",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		script, err := findManagedScript(args[0], inspectLineCount)
 		if err != nil {
-			fmt.Printf("读取脚本失败: %v\n", err)
+			fmt.Printf("Failed to inspect managed skill script: %v\n", err)
 			return
 		}
 
 		if inspectAsJSON {
 			if err := printJSON(script); err != nil {
-				fmt.Printf("输出 JSON 失败: %v\n", err)
+				fmt.Printf("Failed to print JSON output: %v\n", err)
 			}
 			return
 		}
@@ -49,6 +49,6 @@ var inspectCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(inspectCmd)
-	inspectCmd.Flags().BoolVar(&inspectAsJSON, "json", false, "以 JSON 输出脚本详情")
-	inspectCmd.Flags().IntVar(&inspectLineCount, "preview-lines", defaultPreviewLines, "预览内容的行数")
+	inspectCmd.Flags().BoolVar(&inspectAsJSON, "json", false, "Print script details as JSON")
+	inspectCmd.Flags().IntVar(&inspectLineCount, "preview-lines", defaultPreviewLines, "Number of preview lines to show")
 }

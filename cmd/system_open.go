@@ -12,7 +12,7 @@ func openSystemPath(target string) error {
 	cmd := exec.Command(openCmd, args...)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		return fmt.Errorf("无法打开路径: %v (%s)", err, string(output))
+		return fmt.Errorf("failed to open path: %v (%s)", err, string(output))
 	}
 	return nil
 }

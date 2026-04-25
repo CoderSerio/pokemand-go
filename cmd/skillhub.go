@@ -83,7 +83,7 @@ func doSkillHubRequest(req *http.Request) (SkillHubResult, error) {
 		return SkillHubResult{}, err
 	}
 	if resp.StatusCode >= 400 {
-		return SkillHubResult{}, fmt.Errorf("SkillHub API 请求失败: %s", resp.Status)
+		return SkillHubResult{}, fmt.Errorf("SkillHub API request failed: %s", resp.Status)
 	}
 
 	var raw interface{}

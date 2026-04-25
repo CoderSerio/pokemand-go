@@ -11,12 +11,10 @@ import (
 
 var configCmd = &cobra.Command{
 	Use:   "config [action] [key] [value]",
-	Short: "管理系统配置",
-	Long:  "管理系统配置，包括存储路径等",
+	Short: "Manage pkmg configuration",
+	Long:  "Manage pkmg configuration, including the configured data path",
 	Args:  cobra.MinimumNArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println(args)
-
 		if len(args) == 0 {
 			listConfigInfo()
 			return
@@ -28,7 +26,7 @@ var configCmd = &cobra.Command{
 				return
 			}
 
-			fmt.Println("未知的命令")
+			fmt.Println("Unknown action.")
 			return
 		}
 
@@ -36,13 +34,14 @@ var configCmd = &cobra.Command{
 			if args[0] == "del" {
 				err := SetConfig(args[1], "")
 				if err != nil {
-					fmt.Println("删除配置失败", err)
+					fmt.Printf("Failed to delete config key: %v\n", err)
 					return
 				}
+				fmt.Printf("Deleted config key %q.\n", args[1])
 				return
 			}
 
-			fmt.Println("未知的命令")
+			fmt.Println("Unknown action.")
 			return
 		}
 
@@ -53,13 +52,14 @@ var configCmd = &cobra.Command{
 
 				err := SetConfig(key, value)
 				if err != nil {
-					fmt.Printf("设置配置失败: %v\n", err)
+					fmt.Printf("Failed to update config: %v\n", err)
 					return
 				}
+				fmt.Printf("Set config key %q.\n", key)
 				return
 			}
 
-			fmt.Println("未知的命令")
+			fmt.Println("Unknown action.")
 			return
 		}
 	},
@@ -72,7 +72,7 @@ func init() {
 func listConfigInfo() {
 	str, err := GetConfig()
 	if err != nil {
-		fmt.Println("读取配置文件失败", err)
+		fmt.Printf("Failed to read config file: %v\n", err)
 		return
 	}
 	fmt.Println(str)

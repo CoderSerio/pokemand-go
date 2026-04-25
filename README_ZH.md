@@ -75,22 +75,6 @@ cd pokemand-go
 go build -o bin/pkmg .
 ```
 
-### 本地全局软链接测试
-
-如果你在 macOS 上，并且 `/opt/homebrew/bin` 已经在 `PATH` 里：
-
-```bash
-go build -o bin/pkmg .
-ln -sfn "$(pwd)/bin/pkmg" /opt/homebrew/bin/pkmg
-pkmg --version
-```
-
-后续如果要移除这个全局测试链接：
-
-```bash
-rm /opt/homebrew/bin/pkmg
-```
-
 ## 快速开始
 
 初始化工作区：

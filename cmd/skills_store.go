@@ -182,7 +182,7 @@ func createLocalSkill(relativePath string, content string) (LocalSkillDetail, er
 
 	targetAbsolutePath := filepath.Join(getScriptsDir(), filepath.FromSlash(normalizedPath))
 	if _, err := os.Stat(targetAbsolutePath); err == nil {
-		return LocalSkillDetail{}, fmt.Errorf("skill 已存在: %s", normalizedPath)
+		return LocalSkillDetail{}, fmt.Errorf("managed skill script already exists: %s", normalizedPath)
 	} else if !os.IsNotExist(err) {
 		return LocalSkillDetail{}, err
 	}
@@ -291,7 +291,7 @@ func restoreLocalSkillVersion(relativePath string, versionNumber int) (LocalSkil
 		}
 	}
 	if versionFileName == "" {
-		return LocalSkillDetail{}, fmt.Errorf("未找到版本 v%d", versionNumber)
+		return LocalSkillDetail{}, fmt.Errorf("version v%d was not found", versionNumber)
 	}
 
 	versionContent, err := os.ReadFile(filepath.Join(getSkillVersionsDir(relativePath), versionFileName))
@@ -507,18 +507,18 @@ func trimFileExt(name string) string {
 func normalizeSkillRelativePath(relativePath string) (string, error) {
 	trimmed := strings.TrimSpace(relativePath)
 	if trimmed == "" {
-		return "", fmt.Errorf("skill 名称不能为空")
+		return "", fmt.Errorf("managed skill path cannot be empty")
 	}
 	if filepath.IsAbs(trimmed) {
-		return "", fmt.Errorf("skill 路径必须是相对路径")
+		return "", fmt.Errorf("managed skill path must be relative")
 	}
 
 	cleaned := filepath.ToSlash(filepath.Clean(filepath.FromSlash(trimmed)))
 	if cleaned == "." || cleaned == "" {
-		return "", fmt.Errorf("skill 路径不能为空")
+		return "", fmt.Errorf("managed skill path cannot be empty")
 	}
 	if strings.HasPrefix(cleaned, "../") || cleaned == ".." {
-		return "", fmt.Errorf("skill 路径不能跳出 scripts 目录")
+		return "", fmt.Errorf("managed skill path cannot escape the scripts directory")
 	}
 	if filepath.Ext(cleaned) == "" {
 		cleaned += ".sh"
@@ -555,5 +555,5 @@ func nextCopyRelativePath(relativePath string) (string, error) {
 		}
 	}
 
-	return "", fmt.Errorf("无法为 %s 生成副本名称", relativePath)
+	return "", fmt.Errorf("failed to generate a copy name for %s", relativePath)
 }

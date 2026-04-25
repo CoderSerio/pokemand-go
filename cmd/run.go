@@ -10,15 +10,15 @@ import (
 
 var runCmd = &cobra.Command{
 	Use:   "run [filePath]",
-	Short: "运行命令",
-	Long:  "运行命令",
+	Short: "Run a managed skill script",
+	Long:  "Run a managed skill script with optional arguments",
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		// TODO: 未来支持一下并行/并发执行多个命令
 
 		script, err := findManagedScript(args[0], 0)
 		if err != nil {
-			fmt.Printf("文件不存在: %s\n", args[0])
+			fmt.Printf("Managed skill script not found: %s\n", args[0])
 			return
 		}
 
@@ -32,7 +32,7 @@ var runCmd = &cobra.Command{
 		shellCmd.Stderr = os.Stderr
 
 		if err := shellCmd.Run(); err != nil {
-			fmt.Printf("\n执行失败: %v\n", err)
+			fmt.Printf("Script execution failed: %v\n", err)
 			return
 		}
 

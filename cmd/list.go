@@ -13,8 +13,8 @@ var (
 
 var listCmd = &cobra.Command{
 	Use:   "list",
-	Short: "列出文件",
-	Long:  "列出所有文件",
+	Short: "List managed skill scripts",
+	Long:  "List all managed skill scripts",
 	Run: func(cmd *cobra.Command, args []string) {
 		scripts, err := listManagedScripts(0)
 		if err != nil {
@@ -35,16 +35,16 @@ var listCmd = &cobra.Command{
 				Scripts: results,
 			}
 			if err := printJSON(payload); err != nil {
-				fmt.Printf("输出 JSON 失败: %v\n", err)
+				fmt.Printf("Failed to print JSON output: %v\n", err)
 			}
 			return
 		}
 
 		if len(results) == 0 {
 			if search != "" {
-				fmt.Printf("没有找到包含 '%s' 的文件\n", search)
+				fmt.Printf("No managed skill scripts matched %q.\n", search)
 			} else {
-				fmt.Printf("%s 目录为空\n", getScriptsDir())
+				fmt.Printf("No managed skill scripts found in %s.\n", getScriptsDir())
 			}
 			return
 		}
@@ -57,6 +57,6 @@ var listCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(listCmd)
-	listCmd.Flags().StringVarP(&search, "search", "s", "", "搜索文件")
-	listCmd.Flags().BoolVar(&listAsJSON, "json", false, "以 JSON 输出文件列表")
+	listCmd.Flags().StringVarP(&search, "search", "s", "", "Filter scripts by name or path")
+	listCmd.Flags().BoolVar(&listAsJSON, "json", false, "Print the script list as JSON")
 }

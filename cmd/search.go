@@ -12,8 +12,8 @@ var (
 
 var searchCmd = &cobra.Command{
 	Use:   "search [query]",
-	Short: "搜索脚本",
-	Long:  "按名称或相对路径搜索已管理脚本",
+	Short: "Search managed skill scripts",
+	Long:  "Search managed skill scripts by name or relative path",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		scripts, err := listManagedScripts(0)
@@ -34,13 +34,13 @@ var searchCmd = &cobra.Command{
 				Scripts: results,
 			}
 			if err := printJSON(payload); err != nil {
-				fmt.Printf("输出 JSON 失败: %v\n", err)
+				fmt.Printf("Failed to print JSON output: %v\n", err)
 			}
 			return
 		}
 
 		if len(results) == 0 {
-			fmt.Printf("没有找到包含 '%s' 的文件\n", args[0])
+			fmt.Printf("No managed skill scripts matched %q.\n", args[0])
 			return
 		}
 
@@ -52,5 +52,5 @@ var searchCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(searchCmd)
-	searchCmd.Flags().BoolVar(&searchAsJSON, "json", false, "以 JSON 输出搜索结果")
+	searchCmd.Flags().BoolVar(&searchAsJSON, "json", false, "Print search results as JSON")
 }

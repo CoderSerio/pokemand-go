@@ -68,20 +68,20 @@ var (
 
 var uiCmd = &cobra.Command{
 	Use:   "ui",
-	Short: "启动本地 Web UI",
-	Long:  "启动一个轻量的本地 Web UI，用于管理本地脚本技能并通过 WebSocket 与后端交互",
+	Short: "Start the local Web UI",
+	Long:  "Start the local Web UI for managing skill scripts over a WebSocket-backed session",
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := runUIServer(); err != nil {
-			fmt.Printf("启动 UI 失败: %v\n", err)
+			fmt.Printf("Failed to start UI server: %v\n", err)
 		}
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(uiCmd)
-	uiCmd.Flags().StringVar(&uiHost, "host", "127.0.0.1", "UI 服务绑定地址")
-	uiCmd.Flags().IntVar(&uiPort, "port", 3719, "UI 服务端口，传 0 则自动分配")
-	uiCmd.Flags().BoolVar(&uiNoOpen, "no-open", false, "启动后不自动打开浏览器")
+	uiCmd.Flags().StringVar(&uiHost, "host", "127.0.0.1", "Host address to bind the UI server to")
+	uiCmd.Flags().IntVar(&uiPort, "port", 3719, "Port for the UI server, or 0 to auto-assign")
+	uiCmd.Flags().BoolVar(&uiNoOpen, "no-open", false, "Do not open the browser automatically")
 }
 
 func runUIServer() error {
@@ -119,7 +119,7 @@ func runUIServer() error {
 
 	if !uiNoOpen {
 		if err := openSystemPath(url); err != nil {
-			fmt.Printf("自动打开浏览器失败: %v\n", err)
+			fmt.Printf("Failed to open browser automatically: %v\n", err)
 		}
 	}
 
@@ -134,7 +134,7 @@ func runUIServer() error {
 
 	select {
 	case sig := <-sigCh:
-		fmt.Printf("\n收到信号 %s，正在关闭 UI...\n", sig)
+		fmt.Printf("Received signal %s, shutting down UI...\n", sig)
 	case err := <-errCh:
 		if err != nil && err != http.ErrServerClosed {
 			return err

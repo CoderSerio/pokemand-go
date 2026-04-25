@@ -24,19 +24,18 @@ var configDirOnce sync.Once
 
 var rootCmd = &cobra.Command{
 	Use:   "pkmg",
-	Short: "一个用于封装和管理自定义命令的 CLI 工具",
-	Long: `pkmg 是一个简易的命令行工具，用于封装和管理自定义命令。
+	Short: "A local-first CLI for managing reusable skill scripts",
+	Long: `pkmg is a local-first CLI for managing reusable skill scripts.
 
-使用示例:
-  pkmg init          初始化环境
-  pkmg open file     打开文件
+Examples:
+  pkmg init
+  pkmg open cleanup.sh
 `,
 	Version: Version,
 }
 
 func init() {
-	rootCmd.PersistentFlags().BoolP("verbose", "v", false, "启用详细输出模式")
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	rootCmd.PersistentFlags().BoolP("verbose", "v", false, "Enable verbose output")
 }
 
 func Execute() {
@@ -55,7 +54,7 @@ func GetConfigDir() string {
 
 		userConfigDir, err := os.UserConfigDir()
 		if err != nil {
-			fmt.Println("获取用户配置目录失败:", err)
+			fmt.Println("Failed to resolve user config directory:", err)
 			return
 		}
 		configDir = filepath.Join(userConfigDir, "pkmg")
@@ -78,7 +77,7 @@ func GetDataDir() string {
 
 		userConfigDir, err := os.UserConfigDir()
 		if err != nil {
-			fmt.Println("获取用户数据目录失败:", err)
+			fmt.Println("Failed to resolve user data directory:", err)
 			return
 		}
 		dataDir = filepath.Join(userConfigDir, "pkmg")
